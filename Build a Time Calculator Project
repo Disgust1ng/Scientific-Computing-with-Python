@@ -1,0 +1,59 @@
+def add_time(start, duration, starting_day=None):
+    time_part, period = start.split()
+    time_hours, time_minutes = map(int, time_part.split(":"))
+
+    dur_hours_split, dur_minutes_split = duration.split(':')
+    dur_hours = int(dur_hours_split)
+    dur_minutes = int(dur_minutes_split)
+
+    if period == 'PM' and time_hours < 12:
+        time_hours += 12
+    elif period == 'AM' and time_hours == 12:
+        time_hours = 0
+
+    total_minutes = time_minutes + dur_minutes
+    extra_hour = total_minutes // 60
+    final_minutes = total_minutes % 60
+
+    total_hours = time_hours + dur_hours + extra_hour
+    days_later = total_hours // 24
+    final_hour_24 = total_hours % 24
+    
+    if final_hour_24 == 0:
+        final_hour_12 = 12
+        period = 'AM'
+    elif final_hour_24 < 12:
+        final_hour_12 = final_hour_24
+        period = "AM"
+    elif final_hour_24 == 12:
+        final_hour_12 = 12
+        period = "PM"
+    else:
+        final_hour_12 = final_hour_24 - 12
+        period = "PM"
+    
+    if final_minutes < 10:
+        formatted_minutes = "0" + str(final_minutes)
+    else:
+        formatted_minutes = str(final_minutes)
+    new_time = f"{final_hour_12}:{formatted_minutes} {period}"
+
+    new_day = ''
+
+    if starting_day:
+        days_of_week = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+        starting_day = starting_day.lower()
+        day_index = days_of_week.index(starting_day)
+        new_day_index = (day_index + days_later) % 7
+        new_day = days_of_week[new_day_index].capitalize()
+
+        new_time += f", {new_day}"
+
+    if days_later == 1:
+        new_time += " (next day)"
+    elif days_later > 1:
+        new_time += f" ({days_later} days later)"
+
+    return new_time
+
+print(add_time('3:30 PM', '2:12'))

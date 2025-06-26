@@ -1,0 +1,82 @@
+class Category:
+    def __init__(self, name):
+        self.name = name
+        self.ledger = []
+    
+    def deposit(self, amount, description=""):
+        self.ledger.append({"amount": amount, "description": description})
+    
+    def withdraw(self, amount, description=""):
+        if self.check_funds(amount):
+            self.ledger.append({"amount": -amount, "description": description})
+            return True
+        return False
+    
+    def get_balance(self):
+        total = 0
+        for amount in self.ledger:
+            total += amount["amount"]
+        return total
+
+    def transfer(self, amount, category):
+        if self.check_funds(amount):
+            self.withdraw(amount, f"Transfer to {category.name}")
+            category.deposit(amount, f"Transfer from {self.name}")
+            return True
+        return False
+
+    def check_funds(self, amount):
+        return self.get_balance() >= amount
+    
+    def __str__(self):
+        title = f"{self.name:*^30}\n"
+        items = ""
+        for i in self.ledger:
+            des = i["description"][:23]
+            amt = f"{i['amount']:.2f}"
+            items += f"{des:<23}{amt:>7}\n"
+        total = f"Total: {self.get_balance():.2f}"
+        return title + items + total
+
+def create_spend_chart(categories):
+    total_withdrawals = 0
+    spending = []
+
+    for category in categories:
+        cat_total = 0
+
+        for i in category.ledger:
+            amount = i["amount"]
+            if amount < 0:
+                cat_total += -amount
+        spending.append(cat_total)
+        total_withdrawals += cat_total
+    
+    per = [int((amount / total_withdrawals) * 100) // 10 * 10 for amount in spending]
+
+    chart = "Percentage spent by category\n"
+
+    for i in range(100, -1, -10):
+        line = f"{i:>3}|"
+        for percent in per:
+            line += " o " if percent >= i else "   "
+        chart += line + " \n"
+    
+    chart += "    " + "-" * (len(categories) * 3 + 1) + "\n"
+        
+    maximum_len = max(len(cat.name) for cat in categories)
+
+    for i in range(maximum_len):
+        line = "     "
+        for cat in categories:
+            letter = cat.name[i] if i < len(cat.name) else " "
+            line += letter + "  "
+        chart += line + "\n"
+            
+    return chart.rstrip("\n")
+
+food = Category("Food")
+food.deposit(900, "deposit")
+food.withdraw(100, "groceries")
+
+print(create_spend_chart([food]))
